@@ -1,0 +1,120 @@
+vocabulary PacmanVoc {
+
+	/*
+	 * We guarantee you that dir, Left, Right, Up, Down
+	 * will always be correctly interpreted in structures.
+	 * You should not check this.
+	 */
+	type dir
+	Down: dir
+	Left: dir
+	Right: dir
+	Up: dir
+
+	type xCo isa int
+	type yCo isa int
+
+	// The ghosts and pacman
+	type agent
+	pacman:agent
+
+	NoPos(xCo,yCo) 
+	Wall(xCo,yCo,dir)
+
+	// Van wat hieronder staat kan een deel gegeven zijn, een deel gevraagd
+	Gold(xCo,yCo)
+	GameLost
+	GameWon
+	Position(agent,xCo,yCo)
+	
+	PreviousMove(agent,dir)
+	Move(agent,dir)
+	
+	// Hulppredikaten
+	NextTo(xCo,yCo,dir,xCo,yCo)
+	OpposingDir(dir,dir)
+	WallSymm(xCo,yCo,dir)
+	Connected(xCo,yCo,xCo,yCo)
+	Reachable(xCo,yCo,xCo,yCo)
+}
+
+theory PacmanTheory : PacmanVoc{
+
+	// Geeft aan of posities naast elkaar liggen
+	// (x2,y2) ligt naast (x1,y1) in de (gegeven) richting
+	{
+		NextTo(x1,y1,Up,x2,y2)		<- x2 = x1 & y2 = y1 + 1.
+		NextTo(x1,y1,Down,x2,y2)	<- x2 = x1 & y2 = y1 - 1.
+		NextTo(x1,y1,Right,x2,y2)	<- x2 = x1 + 1 & y2 = y1.
+		NextTo(x1,y1,Left,x2,y2)	<- x2 = x1 - 1 & y2 = y1.
+	}
+
+	// Geeft de overstaande richting
+	{
+		OpposingDir(Up,Down).
+		OpposingDir(Left,Right).
+		OpposingDir(d1,d2) <- OpposingDir(d2,d1).
+	}
+	
+	// Geeft aan of er een muur staat op een vak in de gegeven richting
+	// Werkt ook voor het vakje in die richting
+	{
+		! x[xCo], y[yCo], d[dir] : WallSymm(x,y,d) <- Wall(x,y,d).
+		! x1[xCo], y1[yCo], d1[dir], x2[xCo], y2[yCo], d2[dir] :
+			WallSymm(x2,y2,d2) <- WallSymm(x1,y1,d1) & OpposingDir(d1,d2) & NextTo(x1,y1,d1,x2,y2).
+	}
+
+	// Geeft aan of twee buurvakjes verbonden zijn
+	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+		Connected(x1,y1,x2,y2) <=>
+			~NoPos(x1,y1) & ~NoPos(x2,y2) & (? d[dir] : NextTo(x1,y1,d,x2,y2) & ~WallSymm(x1,y1,d)).
+
+	// Geeft aan of twee vakjes verbonden zijn
+	{
+		Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
+		Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Reachable(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
+	}
+	
+	// Alle geldige vakjes zijn met elkaar verbonden
+	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+		(x1 = x2 & y1 = y2) | NoPos(x1,y1) | NoPos(x2,y2) | Reachable(x1,y1,x2,y2).
+		
+	// Spel verloren als pacman op zelfde plaats als spook is
+	GameLost <=> ? a[agent], x[xCo], y[yCo] : a ~= pacman & Position(a,x,y) & Position(pacman,x,y).
+	// Spel gewonnen als er geen goud (meer) is
+	GameWon <=> ~GameLost & ~? x[xCo], y[yCo] : Gold(x,y).
+	
+	// Iedereen is op exact één plaats
+	! a[agent] : ?1 x[xCo], y[yCo] : Position(a,x,y).
+	
+	// Agenten moet op geldige posities staan
+	! a[agent], x[xCo], y[yCo] : Position(a,x,y) => ~NoPos(x,y).
+		
+	// Goud moet op geldige posities liggen
+	! x[xCo], y[yCo] : Gold(x,y) => ~NoPos(x, y).
+	
+	// Niemand beweegt door muren
+	! a[agent], d[dir], x[xCo], y[yCo] :
+		Move(a,d) & Position(a,x,y) => ~WallSymm(x,y,d).
+	
+	// Niemand mag bewegen als het spel gedaan is
+	GameWon | GameLost => ~? a[agent], d[dir] : Move(a,d).
+	
+	// Iedereen moet bewegen als het spel nog niet gedaan is
+	// TODO Controleer dit! Kan iemand vastlopen?
+	// + Iedereen kan hoogstens in één richting tegelijk bewegen
+	~(GameWon | GameLost) => ! a[agent] : ?1 d[dir] : Move(a,d).
+	
+	// Niemand beweegt van het bord
+	! a[agent], d[dir], x1[xCo], y1[yCo] :
+		Move(a,d) & Position(a,x1,y1)
+		=> ? x2[xCo], y2[yCo] : NextTo(x1,y1,d,x2,y2) & ~NoPos(x2,y2).
+		
+	// Spoken mogen zich niet in één stap omkeren
+	! a[agent], d1[dir], d2[dir] :
+		a ~= pacman & PreviousMove(a,d1) & OpposingDir(d1,d2) => ~Move(a,d2).
+		
+	// TODO Op de vorige positie van PacMan ligt geen goud?
+}
+
+
