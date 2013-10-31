@@ -79,7 +79,7 @@ theory PacmanTheory : PacmanVoc{
 		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
 			Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
 		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
-			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Reachable(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
+			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Connected(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
 	}
 	
 	// Alle geldige vakjes zijn met elkaar verbonden
