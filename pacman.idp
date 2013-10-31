@@ -43,17 +43,22 @@ theory PacmanTheory : PacmanVoc{
 	// Geeft aan of posities naast elkaar liggen
 	// (x2,y2) ligt naast (x1,y1) in de (gegeven) richting
 	{
-		NextTo(x1,y1,Up,x2,y2)		<- x2 = x1 & y2 = y1 + 1.
-		NextTo(x1,y1,Down,x2,y2)	<- x2 = x1 & y2 = y1 - 1.
-		NextTo(x1,y1,Right,x2,y2)	<- x2 = x1 + 1 & y2 = y1.
-		NextTo(x1,y1,Left,x2,y2)	<- x2 = x1 - 1 & y2 = y1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Up,x2,y2)		<- x2 = x1 & y2 = y1 + 1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Down,x2,y2)	<- x2 = x1 & y2 = y1 - 1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Right,x2,y2)	<- x2 = x1 + 1 & y2 = y1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Left,x2,y2)	<- x2 = x1 - 1 & y2 = y1.
 	}
 
 	// Geeft de overstaande richting
 	{
 		OpposingDir(Up,Down).
 		OpposingDir(Left,Right).
-		OpposingDir(d1,d2) <- OpposingDir(d2,d1).
+		! d1[dir], d2[dir] :
+			OpposingDir(d1,d2) <- OpposingDir(d2,d1).
 	}
 	
 	// Geeft aan of er een muur staat op een vak in de gegeven richting
@@ -71,8 +76,10 @@ theory PacmanTheory : PacmanVoc{
 
 	// Geeft aan of twee vakjes verbonden zijn
 	{
-		Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
-		Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Reachable(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Reachable(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
 	}
 	
 	// Alle geldige vakjes zijn met elkaar verbonden
