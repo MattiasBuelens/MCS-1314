@@ -66,7 +66,7 @@ theory PacmanTheory : PacmanVoc{
 	{
 		! x[xCo], y[yCo], d[dir] : WallSymm(x,y,d) <- Wall(x,y,d).
 		! x1[xCo], y1[yCo], d1[dir], x2[xCo], y2[yCo], d2[dir] :
-			WallSymm(x2,y2,d2) <- WallSymm(x1,y1,d1) & OpposingDir(d1,d2) & NextTo(x1,y1,d1,x2,y2).
+			WallSymm(x2,y2,d2) <- Wall(x1,y1,d1) & OpposingDir(d1,d2) & NextTo(x1,y1,d1,x2,y2).
 	}
 
 	// Geeft aan of twee buurvakjes verbonden zijn
@@ -119,8 +119,7 @@ theory PacmanTheory : PacmanVoc{
 	// Spoken mogen zich niet in één stap omkeren
 	! a[agent], d1[dir], d2[dir] :
 		a ~= pacman & PreviousMove(a,d1) & OpposingDir(d1,d2) => ~Move(a,d2).
-		
-	// TODO Op de vorige positie van PacMan ligt geen goud?
+
 }
 
 
