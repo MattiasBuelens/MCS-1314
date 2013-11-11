@@ -30,7 +30,7 @@ vocabulary PacmanVoc {
 	PreviousMove(agent,dir)
 	Move(agent,dir)
 	
-	// Hulppredikaten
+	// Hulppredicaten
 	NextTo(xCo,yCo,dir,xCo,yCo)
 	OpposingDir(dir,dir)
 	WallSymm(xCo,yCo,dir)
