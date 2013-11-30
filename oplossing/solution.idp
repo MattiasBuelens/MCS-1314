@@ -2,15 +2,23 @@
  * Title: An IDP source file for pacman
  */
 
-vocabulary PacmanVoc{
+vocabulary PacmanVoc {
 	
 	type time isa int
-	//Only use Start and Next in your theories, never hardcode integer timepoints!
+	/*
+	 * Only use Start and Next in your theories,
+	 * never hardcode integer timepoints!
+	 *
+	 */
 	Start: time
 	partial Next(time):time
 	
-	
-	type dir //We guarantee you that dir, Left, Right, Up, Down will always be correctly interpreted in structures. You should not check this.
+	/*
+	 * We guarantee you that dir, Left, Right, Up, Down
+	 * will always be correctly interpreted in structures.
+	 * You should not check this.
+	 */
+	type dir
 	Down: dir
 	Left: dir
 	Right: dir
@@ -19,12 +27,12 @@ vocabulary PacmanVoc{
 	type xCo isa int
 	type yCo isa int
 
-	type agent //The ghosts and pacman
+	// The ghosts and pacman
+	type agent 
 	pacman:agent
 
 	NoPos(xCo,yCo) 
 	Wall(xCo,yCo,dir)
-	
 
 	Gold(time, xCo, yCo)
 	GameLost(time)
@@ -36,91 +44,141 @@ vocabulary PacmanVoc{
 	I_gold(xCo, yCo)				//Initial gold location
 	I_position(agent, xCo, yCo)		//Initial positions of agents
 
-	
-
-	
+	// Hulppredicaten
+	NextTo(xCo,yCo,dir,xCo,yCo)
+	OpposingDir(dir,dir)
+	WallSymm(xCo,yCo,dir)
+	Connected(xCo,yCo,xCo,yCo)
+	Reachable(xCo,yCo,xCo,yCo)
 }
 
-theory TimeTheory:PacmanVoc{
+theory TimeTheory : PacmanVoc {
 	{
 		Start = MIN[:time].
 		!t: Next(t) = t+1 <- time(t+1).
 	}
 }
 
+theory PacmanTheory : PacmanVoc {
 
+	// Geeft aan of posities naast elkaar liggen
+	// (x2,y2) ligt naast (x1,y1) in de (gegeven) richting
+	{
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Up,x2,y2)		<- x2 = x1 & y2 = y1 + 1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Down,x2,y2)	<- x2 = x1 & y2 = y1 - 1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Right,x2,y2)	<- x2 = x1 + 1 & y2 = y1.
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			NextTo(x1,y1,Left,x2,y2)	<- x2 = x1 - 1 & y2 = y1.
+	}
 
-theory PacmanTheory:PacmanVoc{
+	// Geeft de overstaande richting
+	{
+		OpposingDir(Up,Down).
+		OpposingDir(Left,Right).
+		! d1[dir], d2[dir] :
+			OpposingDir(d1,d2) <- OpposingDir(d2,d1).
+	}
 
-		
+	// Geeft aan of er een muur staat op een vak in de gegeven richting
+	// Werkt ook voor het vakje in die richting
+	// TODO Breidt uit naar muren rond speelveld
+	// TODO Breidt uit naar muren tussen geldige en ongeldige vakjes?
+	{
+		! x[xCo], y[yCo], d[dir] : WallSymm(x,y,d) <- Wall(x,y,d).
+		! x1[xCo], y1[yCo], d1[dir], x2[xCo], y2[yCo], d2[dir] :
+			WallSymm(x2,y2,d2) <- Wall(x1,y1,d1) & OpposingDir(d1,d2) & NextTo(x1,y1,d1,x2,y2).
+	}
+
+	// Geeft aan of twee buurvakjes verbonden zijn
+	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+		Connected(x1,y1,x2,y2) <=>
+			~NoPos(x1,y1) & ~NoPos(x2,y2) & (? d[dir] : NextTo(x1,y1,d,x2,y2) & ~WallSymm(x1,y1,d)).
+
+	// Geeft aan of twee vakjes verbonden zijn
+	// TODO Optimalisatie: bereken reachability vanuit slechts 1 referentievakje?
+	{
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
+		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Connected(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
+	}
+
+	// Alle geldige vakjes zijn met elkaar verbonden
+	// TODO Optimalisatie: controleer reachability naar 1 referentievakje?
+	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
+		(x1 = x2 & y1 = y2) | NoPos(x1,y1) | NoPos(x2,y2) | Reachable(x1,y1,x2,y2).
+
+	// TODO Vertaal originele spelregels naar LTC
 }
 
-theory verification1: PacmanVoc{
+theory verification1: PacmanVoc {
 	//Verify something here
 }
 
-procedure verification1proc(struc){
+procedure verification1proc(struc) {
 	//Do something here: verify verification1 in the context of structure struc. 
-	//At least print whether the verification is satisified or not.
+	//At least print whether the verification is satisfied or not.
 }
 
-theory verification2: PacmanVoc{
+theory verification2: PacmanVoc {
 	//Verify something here
 }
 
-procedure verification2proc(struc){
+procedure verification2proc(struc) {
 	//Do something here: verify verification2 in the context of structure struc. 
-	//At least print whether the verification is satisified or not.
+	//At least print whether the verification is satisfied or not.
 }
 
-theory verification3: PacmanVoc{
+theory verification3: PacmanVoc {
 	//Verify something here
 }
 
-procedure verification3proc(struc){
+procedure verification3proc(struc) {
 	//Do something here: verify verification3 in the context of structure struc. 
-	//At least print whether the verification is satisified or not.
+	//At least print whether the verification is satisfied or not.
 }
 
-theory verification4: PacmanVoc{
+theory verification4: PacmanVoc {
 	//Verify something here
 }
 
-procedure verification4proc(struc){
+procedure verification4proc(struc) {
 	//Do something here: verify verification4 in the context of structure struc. 
-	//At least print whether the verification is satisified or not.
+	//At least print whether the verification is satisfied or not.
 }
 
-procedure allVerifications(){
+procedure allVerifications() {
 	strucToCheck = verStruc
 	verification1proc(strucToCheck)
 	verification2proc(strucToCheck)
 	verification3proc(strucToCheck)
 	verification4proc(strucToCheck)
-
 }
 
-structure verStruc: PacmanVoc{
+structure verStruc: PacmanVoc {
 	
-	time={0..50}
+	time = {0..50}
 	dir = {u;d;l;r}
-	Up=u
-	Down=d
-	Left=l
-	Right=r
+	Up = u
+	Down = d
+	Left = l
+	Right = r
 
 	xCo = {1..5}
 	yCo = {1..5}
 
-	pacman=p
-	agent={p; blinky; }
+	pacman = p
+	agent = {p; blinky}
 
-	NoPos = {1,1; 1,2;  4,2; 4,3; }
-	I_position={p,1,3; blinky, 4,4}
+	NoPos = {1,1; 1,2;  4,2; 4,3}
+	I_position = {p,1,3; blinky, 4,4}
 
 	Wall = {2,2,u;2,3,r;3,2,d;4,4,u;1,4,r;2,4,u}
-	
-	I_gold<cf> = {1,1; 1,2; 4,2; 4,3; 5,5 }
+
+	I_gold<cf> = {1,1; 1,2; 4,2; 4,3; 5,5}
 	I_gold<u> = {}
-		
+
 }
