@@ -3,9 +3,9 @@ MODULE main
 		pacman : agent(0,4,FALSE,gameover);
 		ghost : agent(2,2,TRUE,gameover);
 		
-		sq1 : square(pacman, ghost,0, 0 ,FALSE ,TRUE ,TRUE ,FALSE );
-		sq2 : square(pacman, ghost,1, 0 ,TRUE ,TRUE ,FALSE ,FALSE );
-		sq3 : square(pacman, ghost,2, 0 ,FALSE ,TRUE ,FALSE ,TRUE );
+		sq1 : square(pacman, ghost,0, 1 ,FALSE ,TRUE ,TRUE ,FALSE );
+		sq2 : square(pacman, ghost,1, 1 ,TRUE ,TRUE ,FALSE ,FALSE );
+		sq3 : square(pacman, ghost,2, 1 ,FALSE ,TRUE ,FALSE ,TRUE );
 		sq4 : square(pacman, ghost,0, 2 ,FALSE ,FALSE ,TRUE ,TRUE );
 		sq5 : square(pacman, ghost,2, 2 ,FALSE ,FALSE ,TRUE ,TRUE );
 		sq6 : square(pacman, ghost,0, 3 ,FALSE ,FALSE ,TRUE ,FALSE );
