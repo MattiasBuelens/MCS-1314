@@ -43,6 +43,11 @@ vocabulary PacmanVoc {
 	
 	I_gold(xCo, yCo)				//Initial gold location
 	I_position(agent, xCo, yCo)		//Initial positions of agents
+	
+	Cn_gold(time, xCo, yCo)
+	C_gameLost(time)
+	C_gameWon(time)
+	C_position(time, agent, xCo, yCo)
 
 	// Hulppredicaten
 	RefPos(xCo,yCo)
@@ -118,7 +123,81 @@ theory PacmanTheory : PacmanVoc {
 	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
 		RefPos(x1, y1) => ((x1 = x2 & y1 = y2) | NoPos(x2,y2) | Reachable(x1,y1,x2,y2)).
 
-	// TODO Vertaal originele spelregels naar LTC
+	/*
+	 * LTC
+	 */
+	
+	{ 
+		// Successor State Action Axiom & Inertia
+		! x[xCo], y[yCo] : Gold(Start,x,y) <- I_gold(x,y).
+		! t[time], x[xCo], y[yCo] : Gold(Next(t),x,y) <- Gold(t,x,y) & ~Cn_gold(t,x,y).
+		
+		! t[time] : GameLost(Next(t)) <- GameLost(t) | C_gameLost(t).
+		! t[time] : GameWon(Next(t)) <- GameWon(t) | C_gameWon(t).
+		
+		! a[agent], x[xCo], y[yCo] : Position(Start,a,x,y) <- I_position(a,x,y).
+		! t[time], a[agent], x[xCo], y[yCo] : Position(Next(t),a,x,y) <- C_position(t,a,x,y).
+		! t[time], a[agent], x[xCo], y[yCo] : Position(Next(t),a,x,y) <-
+			Position(t,a,x,y) & ~(? x1[xCo], y1[yCo] : (x1 ~= x | y1 ~= y) & C_position(t,a,x1,y1)).
+	}
+	
+	// Goud verdwijnt als Pacman naar die positie gaat
+	! t[time], x[xCo], y[yCo] : Cn_gold(t,x,y) <=> C_position(t, pacman, x, y).
+
+	{
+		// Spel verloren als Pacman en spook naar zelfde plaats gaan
+		! t[time] : C_gameLost(t) <- ? a[agent], x[xCo], y[yCo]:
+			a ~= pacman & C_position(t,a,x,y) & C_position(t,pacman,x,y).
+
+		// Spel verloren als Pacman en spook elkaar kruisen
+		! t[time] : C_gameLost(t) <- ? a[agent], xa[xCo], ya[yCo], xp[xCo], yp[yCo]:
+			a ~= pacman & Position(t,a,xa,ya) & Position(t,pacman,xp,yp)
+				& C_position(t,a,xp,yp) & C_position(t,pacman,xa,ya).
+	}
+
+	{
+		// Causaties voor bewegingen
+		! t[time], a[agent], d[dir], x[xCo], y[yCo], xn[xCo], yn[yCo] :
+			C_position(t,a,xn,yn) <- Move(t,a,d) & Position(t,a,x,y) & NextTo(x,y,d,xn,yn).
+	}
+
+	{
+		// Spel gewonnen als er geen goud meer is (en het spel nog niet verloren is)
+		// => Spel zal gewonnen worden als Pacman het laatste goudstuk gaat opnemen
+		! t[time] : C_gameWon(t) <- ~C_gameLost(t)
+			& (?1 x[xCo], y[yCo] : Gold(t,x,y) & C_position(t,pacman,x,y)).
+		// Spel gewonnen als spook zich vastloopt in een doodlopend stuk (en het spel nog niet verloren is)
+		// => Spel zal gewonnen worden als spook zich gaat vastlopen
+		! t[time] : C_gameWon(t) <- ~C_gameLost(t)
+			& (? a[agent], x[xCo], y[yCo] : a ~= pacman & C_position(t,a,x,y) & ?3 d[dir] : WallSymm(x,y,d)).
+	}
+
+	// Iedereen is op exact één plaats
+	! t[time], a[agent] : ?1 x[xCo], y[yCo] : Position(t,a,x,y).
+
+	// Agenten moet op geldige posities staan
+	! t[time], a[agent], x[xCo], y[yCo] : Position(t,a,x,y) => ~NoPos(x,y).
+
+	// Goud moet op geldige posities liggen
+	! t[time], x[xCo], y[yCo] : Gold(t,x,y) => ~NoPos(x, y).
+
+	// Niemand beweegt door muren
+	! t[time], a[agent], d[dir], x[xCo], y[yCo] :
+		Move(t,a,d) & Position(t,a,x,y) => ~WallSymm(x,y,d).
+
+	// Niemand mag bewegen als het spel gedaan is
+	! t[time] : GameWon(t) | GameLost(t) => ~? a[agent], d[dir] : Move(t,a,d).
+
+	// Iedereen moet bewegen als het spel nog niet gedaan is
+	// + Iedereen kan hoogstens in één richting tegelijk bewegen
+	! t[time] : ~(GameWon(t) | GameLost(t)) => ! a[agent] : ?1 d[dir] : Move(t,a,d).
+
+	// Niemand beweegt van het bord
+	// Reeds afgehandeld, muren rond bord
+
+	// Spoken mogen zich niet in één stap omkeren
+	! t[time], a[agent], d1[dir], d2[dir] :
+		a ~= pacman & Move(t,a,d1) & OpposingDir(d1,d2) => ~Move(Next(t),a,d2).
 }
 
 theory verification1: PacmanVoc {

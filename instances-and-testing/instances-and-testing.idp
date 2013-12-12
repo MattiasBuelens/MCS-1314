@@ -13,6 +13,9 @@ include "instances.idp"
 
 
 procedure main(){
+	stdoptions.liftedunitpropagation = false
+	stdoptions.groundwithbounds = false
+
 	print("Possible methods to call are:")
 	print(" visualiseSome()", "searches for some solutions to your theory with specific properties and visualises them.	")
 	print(" visualiseModels(n)", "searches for n models to your problem and visualises them .	")
