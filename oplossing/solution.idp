@@ -135,9 +135,9 @@ theory PacmanTheory : PacmanVoc {
 		! x[xCo], y[yCo] : Gold(Start,x,y) <- I_gold(x,y).
 		! t[time], x[xCo], y[yCo] : Gold(Next(t),x,y) <- Gold(t,x,y) & ~Cn_gold(t,x,y).
 		
-		! t[time] : GameLost(Start) <- I_gameLost.
+		GameLost(Start) <- I_gameLost.
 		! t[time] : GameLost(Next(t)) <- GameLost(t) | C_gameLost(t).
-		! t[time] : GameWon(Start) <- I_gameWon.
+		GameWon(Start) <- I_gameWon.
 		! t[time] : GameWon(Next(t)) <- GameWon(t) | C_gameWon(t).
 		
 		! a[agent], x[xCo], y[yCo] : Position(Start,a,x,y) <- I_position(a,x,y).
