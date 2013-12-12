@@ -82,15 +82,19 @@ theory PacmanTheory : PacmanVoc {
 		! d1[dir], d2[dir] :
 			OpposingDir(d1,d2) <- OpposingDir(d2,d1).
 	}
-
+	
 	// Geeft aan of er een muur staat op een vak in de gegeven richting
-	// Werkt ook voor het vakje in die richting
-	// TODO Breidt uit naar muren rond speelveld
-	// TODO Breidt uit naar muren tussen geldige en ongeldige vakjes?
 	{
+		// Plaats muren in beide richtingen
 		! x[xCo], y[yCo], d[dir] : WallSymm(x,y,d) <- Wall(x,y,d).
 		! x1[xCo], y1[yCo], d1[dir], x2[xCo], y2[yCo], d2[dir] :
 			WallSymm(x2,y2,d2) <- Wall(x1,y1,d1) & OpposingDir(d1,d2) & NextTo(x1,y1,d1,x2,y2).
+		// Plaats muren rond ongeldige vakjes
+		! x1[xCo], y1[yCo], d[dir], x2[xCo], y2[yCo] :
+			WallSymm(x1,y1,d) <- ~NoPos(x1,y1) & NoPos(x2,y2) & NextTo(x1,y1,d,x2,y2).
+		// Plaats muren rond speelveld
+		! x1[xCo], y1[yCo], d[dir] :
+			WallSymm(x1,y1,d) <- ~NoPos(x1,y1) & ~(? x2[xCo], y2[yCo] : NextTo(x1,y1,d,x2,y2)).
 	}
 
 	// Geeft aan of twee buurvakjes verbonden zijn
