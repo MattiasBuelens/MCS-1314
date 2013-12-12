@@ -31,6 +31,7 @@ vocabulary PacmanVoc {
 	Move(agent,dir)
 	
 	// Hulppredicaten
+	RefPos(xCo,yCo)
 	NextTo(xCo,yCo,dir,xCo,yCo)
 	OpposingDir(dir,dir)
 	WallSymm(xCo,yCo,dir)
@@ -74,18 +75,22 @@ theory PacmanTheory : PacmanVoc{
 		Connected(x1,y1,x2,y2) <=>
 			~NoPos(x1,y1) & ~NoPos(x2,y2) & (? d[dir] : NextTo(x1,y1,d,x2,y2) & ~WallSymm(x1,y1,d)).
 
-	// Geeft aan of twee vakjes verbonden zijn
+	// Selecteer een referentievakje van waaruit bereikbaarheid kan uitgedrukt worden
+	! x[xCo], y[yCo] : RefPos(x,y) <=> ~NoPos(x,y)
+		& (! x1[xCo], y1[yCo] : x1 < x | (x1 = x & y1 < y) => NoPos(x1, y1)).
+
+	// Geeft aan of een vakje verbonden is met het referentievakje
 	{
 		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
-			Reachable(x1,y1,x2,y2) <- Connected(x1,y1,x2,y2).
+			Reachable(x1,y1,x2,y2) <- RefPos(x1,y1) & Connected(x1,y1,x2,y2).
 		! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
-			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Connected(x1,y1,x3,y3) & Reachable(x3,y3,x2,y2)).
+			Reachable(x1,y1,x2,y2) <- (? x3[xCo], y3[yCo] : Connected(x3,y3,x2,y2) & Reachable(x1,y1,x3,y3)).
 	}
-	
-	// Alle geldige vakjes zijn met elkaar verbonden
+
+	// Alle geldige vakjes zijn verbonden met het referentievakje
 	! x1[xCo], y1[yCo], x2[xCo], y2[yCo] :
-		(x1 = x2 & y1 = y2) | NoPos(x1,y1) | NoPos(x2,y2) | Reachable(x1,y1,x2,y2).
-		
+		RefPos(x1, y1) => ((x1 = x2 & y1 = y2) | NoPos(x2,y2) | Reachable(x1,y1,x2,y2)).
+
 	// Spel verloren als pacman op zelfde plaats als spook is
 	GameLost <=> ? a[agent], x[xCo], y[yCo] : a ~= pacman & Position(a,x,y) & Position(pacman,x,y).
 	// Spel gewonnen als er geen goud (meer) is
