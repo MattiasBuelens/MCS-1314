@@ -160,7 +160,10 @@ theory PacmanTheory : PacmanVoc {
 	}
 	
 	// Goud verdwijnt als Pacman naar die positie gaat
-	! t[time], x[xCo], y[yCo] : Cn_gold(t,x,y) <=> C_position(t, pacman, x, y).
+	{
+		! t[time], x[xCo], y[yCo] :
+			Cn_gold(t,x,y) <- Gold(t,x,y) & C_position(t,pacman,x,y).
+	}
 
 	// Spel initieel verloren als Pacman en spook op zelfde plaats staan
 	I_gameLost <=> ? a[agent], x[xCo], y[yCo]:
