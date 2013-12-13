@@ -138,12 +138,14 @@ theory PacmanTheory : PacmanVoc {
 
 	{
 		GameLost(Start) <- I_gameLost.
-		! t[time] : GameLost(Next(t)) <- GameLost(t) | C_gameLost(t).
+		// Spel kan verloren worden als het nog niet gewonnen is
+		! t[time] : GameLost(Next(t)) <- GameLost(t) | (~GameWon(t) & C_gameLost(t)).
 	}
 
 	{
 		GameWon(Start) <- I_gameWon.
-		! t[time] : GameWon(Next(t)) <- GameWon(t) | C_gameWon(t).
+		// Spel kan gewonnen worden als het nog niet verloren is of wordt
+		! t[time] : GameWon(Next(t)) <- GameWon(t) | (~GameLost(t) & ~C_gameLost(t) & C_gameWon(t)).
 	}
 
 	{
@@ -186,12 +188,12 @@ theory PacmanTheory : PacmanVoc {
 	{
 		// Spel gewonnen als er geen goud meer is (en het spel nog niet verloren is)
 		// => Spel zal gewonnen worden als Pacman het laatste goudstuk gaat opnemen
-		! t[time] : C_gameWon(t) <- ~C_gameLost(t)
-			& (?1 x[xCo], y[yCo] : Gold(t,x,y) & C_position(t,pacman,x,y)).
+		! t[time] : C_gameWon(t) <- ?1 x[xCo], y[yCo] :
+			Gold(t,x,y) & C_position(t,pacman,x,y).
 		// Spel gewonnen als een spook zich vastloopt in een doodlopend stuk (en het spel nog niet verloren is)
 		// => Spel zal gewonnen worden als een spook zich gaat vastlopen
-		! t[time] : C_gameWon(t) <- ~C_gameLost(t)
-			& (? a[agent], x[xCo], y[yCo] : a ~= pacman & C_position(t,a,x,y) & ?3 d[dir] : WallSymm(x,y,d)).
+		! t[time] : C_gameWon(t) <- ? a[agent], x[xCo], y[yCo] :
+			a ~= pacman & C_position(t,a,x,y) & ?3 d[dir] : WallSymm(x,y,d).
 	}
 
 	// Iedereen is op exact één plaats
