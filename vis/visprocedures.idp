@@ -50,8 +50,8 @@ procedure vis(struc, visfile){
 	outputvisfile = tempfilename()
 	print("bash -c "..gringo.." "..visfile.." "..solfile2.." | "..clasp.."  > "..outputvisfile)
 	err = os.execute("bash -c "..gringo.." "..visfile.." "..solfile2.." | "..clasp.."  > "..outputvisfile)
-	print("bash -c & "..draw.." "..outputvisfile.." "..idpdraw)
-	os.execute("bash -c & "..draw.." "..outputvisfile.." "..idpdraw)
+	print("bash -c "..draw.." "..outputvisfile.." "..idpdraw)
+	os.execute("bash -c "..draw.." "..outputvisfile.." "..idpdraw)
 	
 }
 
