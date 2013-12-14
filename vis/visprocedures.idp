@@ -4,15 +4,18 @@
  */
  procedure setparameters(){
 	//IF you run on your own pc, please make sure these things are okay.
-	idpdraw="/localhost/packages/eclipse/eclipse-4.3-ide/external/idpdraw"
-	clasp="/localhost/packages/eclipse/eclipse-4.3-ide/external/clasp  --verbose=0 --asp09 "
-	gringo="/localhost/packages/eclipse/eclipse-4.3-ide/external/gringo"
+	//idpdraw="/localhost/packages/eclipse/eclipse-4.3-ide/external/idpdraw"
+	//clasp="/localhost/packages/eclipse/eclipse-4.3-ide/external/clasp  --verbose=0 --asp09 "
+	//gringo="/localhost/packages/eclipse/eclipse-4.3-ide/external/gringo"
+	idpdraw="\"../vis/bin/idpdraw.exe\""
+	clasp="\"../vis/bin/clasp.exe\"  --verbose=0 --asp09"
+	gringo="../vis/bin/gringo.exe"
 	
 	pacmanvisfile="vis.asp"
 	pacmanvisfileNoTime="visnotime.asp"
 	
-	ul="./upperlower.sh"
-	draw="./grepdraw.sh"
+	ul="../vis/upperlower.sh"
+	draw="../vis/grepdraw.sh"
 	
 	//TODO REMOVE THIS 
 	//idpdraw="/home/bartb/Desktop/external/idpdraw"
@@ -41,11 +44,14 @@ procedure vis(struc, visfile){
 	file:write(tostring(struc))
 	file:close()
 	
-	os.execute(ul.." "..solfile.." "..solfile2)
+	print("bash "..ul.." "..solfile.." "..solfile2)
+	os.execute("bash "..ul.." "..solfile.." "..solfile2)
 
 	outputvisfile = tempfilename()
-	err = os.execute(gringo.." "..visfile.." "..solfile2.." | "..clasp.."  > "..outputvisfile)
-	os.execute(draw.." "..outputvisfile.." "..idpdraw)
+	print("bash -c "..gringo.." "..visfile.." "..solfile2.." | "..clasp.."  > "..outputvisfile)
+	err = os.execute("bash -c "..gringo.." "..visfile.." "..solfile2.." | "..clasp.."  > "..outputvisfile)
+	print("bash -c & "..draw.." "..outputvisfile.." "..idpdraw)
+	os.execute("bash -c & "..draw.." "..outputvisfile.." "..idpdraw)
 	
 }
 
