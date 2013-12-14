@@ -4,15 +4,18 @@
  */
  procedure setparameters(){
 	//IF you run on your own pc, please make sure these things are okay.
-	idpdraw="/localhost/packages/eclipse/eclipse-4.3-ide/external/idpdraw"
-	clasp="/localhost/packages/eclipse/eclipse-4.3-ide/external/clasp  --verbose=0 --asp09 "
-	gringo="/localhost/packages/eclipse/eclipse-4.3-ide/external/gringo"
+	//idpdraw="/localhost/packages/eclipse/eclipse-4.3-ide/external/idpdraw"
+	//clasp="/localhost/packages/eclipse/eclipse-4.3-ide/external/clasp  --verbose=0 --asp09 "
+	//gringo="/localhost/packages/eclipse/eclipse-4.3-ide/external/gringo"
+	idpdraw="idpdraw"
+	clasp="clasp  --verbose=0 --asp09 "
+	gringo="gringo"
 	
-	pacmanvisfile="vis.asp"
-	pacmanvisfileNoTime="visnotime.asp"
+	pacmanvisfile="../vis/vis.asp"
+	pacmanvisfileNoTime="../vis/visnotime.asp"
 	
-	ul="./upperlower.sh"
-	draw="./grepdraw.sh"
+	ul="../vis/upperlower.sh"
+	draw="../vis/grepdraw.sh"
 	
 	//TODO REMOVE THIS 
 	//idpdraw="/home/bartb/Desktop/external/idpdraw"
