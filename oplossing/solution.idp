@@ -2,6 +2,8 @@
  * Title: An IDP source file for pacman
  */
 
+include <mx> 
+
 vocabulary PacmanVoc {
 	
 	type time isa int
@@ -222,42 +224,88 @@ theory PacmanTheory : PacmanVoc {
 }
 
 theory verification1: PacmanVoc {
-	//Verify something here
+	// Het aantal muntstukken op het bord kan enkel omlaag gaan
+	// Sterker: ieder goudstuk dat verdwijnt, komt nooit meer terug
+
+	// Bewijs uit het ongerijmde:
+	// Er bestaat een goudstuk dat terugkomt nadat het verdwenen was
+	? t1[time], x[xCo], y[yCo] : ~Gold(t1,x,y) &
+		? t2[time] : t2 > t1 & Gold(t2,x,y).
 }
 
 procedure verification1proc(struc) {
-	//Do something here: verify verification1 in the context of structure struc. 
-	//At least print whether the verification is satisfied or not.
+	local myTheo = merge(PacmanTheory, TimeTheory)
+	local verifTheo = merge(myTheo, verification1)
+	local model = onemodel(verifTheo, struc)
+	if model == nil then
+		print("Verification 1 succeeded, no counterexamples found")
+	else
+		print("Verification 1 failed, counterexample found:")
+		print(model)
+	end
 }
 
 theory verification2: PacmanVoc {
-	//Verify something here
+	// Als het spel ten einde is, blijft het ten einde
+
+	// Bewijs uit het ongerijmde:
+	// Er bestaat een tijdsmoment waarop het spel niet ten einde is
+	// dat komt na een tijdsmoment waarop het spel ten einde was
+	? t1[time] : (GameWon(t1) | GameLost(t1)) &
+		? t2[time] : t2 > t1 & ~(GameWon(t2) | GameLost(t2)).
 }
 
 procedure verification2proc(struc) {
-	//Do something here: verify verification2 in the context of structure struc. 
-	//At least print whether the verification is satisfied or not.
+	local myTheo = merge(PacmanTheory, TimeTheory)
+	local verifTheo = merge(myTheo, verification2)
+	local model = onemodel(verifTheo, struc)
+	if model == nil then
+		print("Verification 2 succeeded, no counterexamples found")
+	else
+		print("Verification 2 failed, counterexample found:")
+		print(model)
+	end
 }
 
 theory verification3: PacmanVoc {
-	//Verify something here
+	// Het is mogelijk om het spel te winnen
+	? t[time] : GameWon(t).
 }
 
 procedure verification3proc(struc) {
-	//Do something here: verify verification3 in the context of structure struc. 
-	//At least print whether the verification is satisfied or not.
+	local myTheo = merge(PacmanTheory, TimeTheory)
+	local verifTheo = merge(myTheo, verification3)
+	local model = onemodel(verifTheo, struc)
+	if model ~= nil then
+		print("Verification 3 succeeded, example found:")
+		print(model)
+	else
+		print("Verification 3 failed, no example found")
+	end
 }
 
 theory verification4: PacmanVoc {
-	//Verify something here
+	// Het is mogelijk om het spel te verliezen
+	// Bewijs door voorbeeld
+	? t[time] : GameLost(t).
 }
 
 procedure verification4proc(struc) {
-	//Do something here: verify verification4 in the context of structure struc. 
-	//At least print whether the verification is satisfied or not.
+	local myTheo = merge(PacmanTheory, TimeTheory)
+	local verifTheo = merge(myTheo, verification4)
+	local model = onemodel(verifTheo, struc)
+	if model ~= nil then
+		print("Verification 4 succeeded, example found:")
+		print(model)
+	else
+		print("Verification 4 failed, no example found")
+	end
 }
 
 procedure allVerifications() {
+	stdoptions.liftedunitpropagation = false
+	stdoptions.groundwithbounds = false
+
 	strucToCheck = verStruc
 	verification1proc(strucToCheck)
 	verification2proc(strucToCheck)
