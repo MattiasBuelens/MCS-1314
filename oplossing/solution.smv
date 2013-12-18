@@ -17,21 +17,58 @@ MODULE main
 		gameState : {WIN,LOSE,playing};
 		gameover: boolean;
 	--TODO finish this module
+	ASSIGN
+		init(gameState) := playing;
+		next(gameState) := playing; 
+	INVAR
+		gameover = (gameState != playing);
 
 
-	
-	
 
 
-	
+
 --Represents a "walking object"
 -- it has a startposition (given by startX and startY), 
 -- a boolean isGhost that is true if this agent is a ghost, 
 -- and it knows whether the game is over (boolean gameover)
 MODULE agent(startX,startY,isGhost,gameover)
 	--TODO finish this module
+	VAR
+		x : 0..4;
+		y : 0..4;
+		u : boolean;
+		d : boolean;
+		l : boolean;
+		r : boolean;
+		move : { stop, up, down, left, right };
+	ASSIGN
+		init(x) := startX;
+		init(y) := startY;
+		next(x) :=	case	move = left & x > 0 : x - 1;
+							move = right & x < 4 : x + 1;
+							TRUE : x;
+					esac;
+		next(y) :=	case	move = down & y > 0 : y - 1;
+							move = up & y < 4 : y + 1;
+							TRUE : y;
+					esac;
+	INVAR
+		-- Stop moving when game is over
+		(move = stop	<-> gameover);
+	INVAR
+		-- Allow move if no wall in that direction 
+		(move = left	-> !l)
+		& (move = right	-> !r)
+		& (move = down	-> !d)
+		& (move = up	-> !u);
+	TRANS
+		-- Ghosts cannot switch direction in one turn
+		isGhost ->
+			(next(move) = left		-> move != right)
+			& (next(move) = right	-> move != left)
+			& (next(move) = down	-> move != up)
+			& (next(move) = up		-> move != down);
 
-	
 
 --Represents a square
 --u, d, l and r are booleans representing whether or not there is a wall in that specific direction from the square
@@ -39,5 +76,9 @@ MODULE agent(startX,startY,isGhost,gameover)
 --x and y are its coordinates on the square
 MODULE square(pacman,ghost,x,y,u,d,l,r)
 	-- TODO do something here, probably related to coins ;-)
-	
-	
+
+	INVAR
+		-- If agent is on this square, inform him about walls 
+		((pacman.x = x & pacman.y = y) -> (pacman.u = u & pacman.d = d & pacman.l = l & pacman.r = r))
+		& ((ghost.x = x & ghost.y = y) -> (ghost.u = u & ghost.d = d & ghost.l = l & ghost.r = r));
+
