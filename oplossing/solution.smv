@@ -18,6 +18,7 @@ MODULE main
 		gameover: boolean;
 	--TODO finish this module
 	ASSIGN
+		-- TODO Dummy implementation, replace with actual rules
 		init(gameState) := playing;
 		next(gameState) := playing; 
 	INVAR
@@ -64,10 +65,10 @@ MODULE agent(startX,startY,isGhost,gameover)
 	TRANS
 		-- Ghosts cannot switch direction in one turn
 		isGhost ->
-			(next(move) = left		-> move != right)
-			& (next(move) = right	-> move != left)
-			& (next(move) = down	-> move != up)
-			& (next(move) = up		-> move != down);
+			(move = left	-> next(move) != right)
+			& (move = right	-> next(move) != left)
+			& (move = down	-> next(move) != up)
+			& (move = up	-> next(move) != down);
 
 
 --Represents a square
