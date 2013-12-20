@@ -16,6 +16,8 @@ MODULE main
 						
 		gameState : {WIN,LOSE,playing};
 		gameover: boolean;
+		
+		time : 0..10;
 	--TODO finish this module
 	ASSIGN
 		init(gameState) :=	case	is_colliding : LOSE;
@@ -28,6 +30,10 @@ MODULE main
 									!next(has_gold) : WIN;
 									TRUE : playing;
 							esac;
+		init(time) := 0;
+		next(time) := case	time < 10 : time + 1;
+							TRUE : time;
+					esac;
 	DEFINE
 		-- Check if any square still has gold
 		has_gold := sq1.gold | sq2.gold | sq3.gold | sq4.gold | sq5.gold | sq6.gold | sq7.gold | sq8.gold | sq9.gold | sq10.gold;
@@ -39,6 +45,39 @@ MODULE main
 	INVAR
 		-- gameover is just derived from gameState
 		gameover = (gameState != playing);
+	
+	-- Vanuit elke begintoestand kan het spel zowel gewonnen als verloren worden.
+	SPEC
+		(EF gameState = WIN) & (EF gameState = LOSE);
+	
+	-- Muntjes kunnen niet terug verschijnen: als er ergens geen muntje ligt, dan
+	-- zal in de toekomomst er nooit nog een muntje liggen. (check dit voor 1 concreet vakje)
+	LTLSPEC
+		G (!sq1.gold -> G !sq1.gold);
+	
+	-- Het is mogelijk dat pacman oneindig vaak op locatie (1, 0) is terwijl het
+	-- spel nog bezig is.
+	-- TODO Fout in opgave? (1, 0) niet op het bord (geen vakje), (0, 1) bedoeld?
+	SPEC
+		EF (EG AF (pacman.x = 0 & pacman.y = 1 & !gameover));
+	
+	-- Als pacman oneindig vaak op locatie (1, 0) komt en oneindig vaak op
+	-- locatie (1, 3) komt, dan wordt het spel nooit gewonnen.
+	-- TODO Fout in opgave? (1, 0) niet op het bord (geen vakje), (0, 1) bedoeld?
+	LTLSPEC
+		G F (pacman.x = 0 & pacman.y = 1) & G F (pacman.x = 1 & pacman.y = 3) -> G gameState != WIN;
+	
+	-- Eens het spel verloren of gewonnen is, blijft het spel in deze toestand.
+	LTLSPEC
+		G (gameState = WIN -> G gameState = WIN) & G (gameState = LOSE -> G gameState = LOSE);
+	
+	-- Er zijn minstens 10 tijdstappen nodig om het spel te winnen.
+	LTLSPEC
+		-- Noot: weak-until is eigenlijk voldoende, time hoeft niet 10 te worden (mag vroeger stoppen)
+		--       NuSMV heeft zelf geen weak-until en we weten dat time altijd 10 zal worden,
+		--       dus het is niet echt nodig om zelf de equivalentie voor weak-until i.f.v. U en G te gebruiken
+		(gameState != WIN) U (time = 10);
+
 
 --Represents a "walking object"
 -- it has a startposition (given by startX and startY), 
@@ -49,10 +88,6 @@ MODULE agent(startX,startY,isGhost,gameover)
 	VAR
 		x : 0..4;
 		y : 0..4;
-		u : boolean;
-		d : boolean;
-		l : boolean;
-		r : boolean;
 		move : { stop, up, down, left, right };
 	ASSIGN
 		init(x) := startX;
@@ -68,12 +103,6 @@ MODULE agent(startX,startY,isGhost,gameover)
 	INVAR
 		-- Stop moving when game is over
 		(move = stop	<-> gameover);
-	INVAR
-		-- Allow move if no wall in that direction 
-		(move = left	-> !l)
-		& (move = right	-> !r)
-		& (move = down	-> !d)
-		& (move = up	-> !u);
 	TRANS
 		-- Ghosts cannot switch direction in one turn
 		isGhost ->
@@ -99,7 +128,18 @@ MODULE square(pacman,ghost,x,y,u,d,l,r)
 								TRUE : gold;
 						esac;
 	INVAR
-		-- If agent is on this square, inform him about walls
-		-- TODO Alternative: reason directly about agent's move?
-		((pacman.x = x & pacman.y = y) -> (pacman.u = u & pacman.d = d & pacman.l = l & pacman.r = r))
-		& ((ghost.x = x & ghost.y = y) -> (ghost.u = u & ghost.d = d & ghost.l = l & ghost.r = r));
+		-- If Pacman is on this square, restrict his movement depending on walls
+		(pacman.x = x & pacman.y = y) -> (
+			(pacman.move = left		-> !l)
+			& (pacman.move = right	-> !r)
+			& (pacman.move = down	-> !d)
+			& (pacman.move = up		-> !u)
+		);
+	INVAR
+		-- Same for ghost
+		(ghost.x = x & ghost.y = y) -> (
+			(ghost.move = left		-> !l)
+			& (ghost.move = right	-> !r)
+			& (ghost.move = down	-> !d)
+			& (ghost.move = up		-> !u)
+		);
