@@ -164,7 +164,7 @@ theory PacmanTheory : PacmanVoc {
 
 	// Goud verdwijnt als Pacman op die positie staat (en het spel nog niet verloren is)
 	! t[time], x[xCo], y[yCo] :
-		Cn_gold(t,x,y) <=> ~GameLost(t) & Gold(t,x,y) & Position(t,pacman,x,y).
+		Cn_gold(t,x,y) <=> ~GameLost(t) & ~C_gameLost(t) & Gold(t,x,y) & C_position(t,pacman,x,y).
 
 	// Spel initieel verloren als Pacman en spook op zelfde plaats staan
 	I_gameLost <=> ? a[agent], x[xCo], y[yCo]:
@@ -286,7 +286,6 @@ procedure verification3proc(struc) {
 
 theory verification4: PacmanVoc {
 	// Het is mogelijk om het spel te verliezen
-	// Bewijs door voorbeeld
 	? t[time] : GameLost(t).
 }
 
