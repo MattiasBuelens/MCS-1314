@@ -18,14 +18,27 @@ MODULE main
 		gameover: boolean;
 	--TODO finish this module
 	ASSIGN
-		-- TODO Dummy implementation, replace with actual rules
-		init(gameState) := playing;
-		next(gameState) := playing; 
+		init(gameState) :=	case	is_colliding : LOSE;
+									!has_gold : WIN;
+									TRUE : playing;
+							esac;
+		next(gameState) :=	case	gameState != playing : gameState;
+									next(is_colliding) : LOSE;
+									is_crossing : LOSE;
+									!next(has_gold) : WIN;
+									TRUE : playing;
+							esac;
+	DEFINE
+		-- Check if any square still has gold
+		has_gold := sq1.gold | sq2.gold | sq3.gold | sq4.gold | sq5.gold | sq6.gold | sq7.gold | sq8.gold | sq9.gold | sq10.gold;
+		-- Check if Pacman is at same position as ghost
+		is_colliding := pacman.x = ghost.x & pacman.y = ghost.y;
+		-- Check if Pacman crosses the ghost
+		is_crossing :=	pacman.x = next(ghost.x) & pacman.y = next(ghost.y)
+						& ghost.x = next(pacman.x) & ghost.y = next(pacman.y);
 	INVAR
+		-- gameover is just derived from gameState
 		gameover = (gameState != playing);
-
-
-
 
 --Represents a "walking object"
 -- it has a startposition (given by startX and startY), 
@@ -79,11 +92,10 @@ MODULE square(pacman,ghost,x,y,u,d,l,r)
 	VAR
 		gold : boolean;
 	ASSIGN
-		-- TODO Leave this out for 'random' gold distribution?
 		init(gold) := TRUE;
-		-- Gold disappears when pacman is on the square
+		-- Gold disappears when pacman moves to the square
 		-- Otherwise, the gold remains
-		next(gold) :=	case	(pacman.x = x & pacman.y = y) : FALSE;
+		next(gold) :=	case	(next(pacman.x) = x & next(pacman.y) = y) : FALSE;
 								TRUE : gold;
 						esac;
 	INVAR
