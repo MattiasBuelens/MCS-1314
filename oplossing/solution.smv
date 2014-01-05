@@ -50,7 +50,7 @@ MODULE main
 		(EF gameState = WIN) & (EF gameState = LOSE);
 	
 	-- Muntjes kunnen niet terug verschijnen: als er ergens geen muntje ligt, dan
-	-- zal in de toekomomst er nooit nog een muntje liggen. (check dit voor 1 concreet vakje)
+	-- zal in de toekomst er nooit nog een muntje liggen. (check dit voor 1 concreet vakje)
 	LTLSPEC
 		G (!sq1.gold -> G !sq1.gold);
 	
