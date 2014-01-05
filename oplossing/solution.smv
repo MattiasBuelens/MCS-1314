@@ -18,7 +18,6 @@ MODULE main
 		gameover: boolean;
 		
 		time : 0..10;
-	--TODO finish this module
 	ASSIGN
 		init(gameState) :=	case	is_colliding : LOSE;
 									!has_gold : WIN;
@@ -55,17 +54,15 @@ MODULE main
 	LTLSPEC
 		G (!sq1.gold -> G !sq1.gold);
 	
-	-- Het is mogelijk dat pacman oneindig vaak op locatie (1, 0) is terwijl het
+	-- Het is mogelijk dat pacman oneindig vaak op locatie (1, 1) is terwijl het
 	-- spel nog bezig is.
-	-- TODO Fout in opgave? (1, 0) niet op het bord (geen vakje), (0, 1) bedoeld?
 	SPEC
-		EF (EG AF (pacman.x = 0 & pacman.y = 1 & !gameover));
+		EF (EG AF (pacman.x = 1 & pacman.y = 1 & !gameover));
 	
-	-- Als pacman oneindig vaak op locatie (1, 0) komt en oneindig vaak op
+	-- Als pacman oneindig vaak op locatie (1, 1) komt en oneindig vaak op
 	-- locatie (1, 3) komt, dan wordt het spel nooit gewonnen.
-	-- TODO Fout in opgave? (1, 0) niet op het bord (geen vakje), (0, 1) bedoeld?
 	LTLSPEC
-		G F (pacman.x = 0 & pacman.y = 1) & G F (pacman.x = 1 & pacman.y = 3) -> G gameState != WIN;
+		G F (pacman.x = 1 & pacman.y = 1) & G F (pacman.x = 1 & pacman.y = 3) -> G gameState != WIN;
 	
 	-- Eens het spel verloren of gewonnen is, blijft het spel in deze toestand.
 	LTLSPEC
