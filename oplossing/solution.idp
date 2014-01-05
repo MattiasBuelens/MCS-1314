@@ -186,9 +186,9 @@ theory PacmanTheory : PacmanVoc {
 
 	{
 		// Spel gewonnen als er geen goud meer is (en het spel nog niet verloren is)
-		// => Spel zal gewonnen worden als Pacman het laatste goudstuk gaat opnemen
+		// => Spel zal gewonnen worden als al het goud verdwenen is of zal verdwijnen.
 		! t[time] : C_gameWon(t) <- ! x[xCo], y[yCo] :
-			Gold(t,x,y) => C_position(t,pacman,x,y).
+			Gold(t,x,y) => Cn_gold(t,x,y).
 		// Spel gewonnen als een spook zich vastloopt in een doodlopend stuk (en het spel nog niet verloren is)
 		// => Spel zal gewonnen worden als een spook zich gaat vastlopen
 		! t[time] : C_gameWon(t) <- ? a[agent], x[xCo], y[yCo] :
