@@ -277,8 +277,8 @@ procedure verification3proc(struc) {
 	local verifTheo = merge(myTheo, verification3)
 	local model = onemodel(verifTheo, struc)
 	if model ~= nil then
-		print("Verification 3 succeeded, example found:")
-		print(model)
+		print("Verification 3 succeeded, example found")
+		--print(model)
 	else
 		print("Verification 3 failed, no example found")
 	end
@@ -294,8 +294,8 @@ procedure verification4proc(struc) {
 	local verifTheo = merge(myTheo, verification4)
 	local model = onemodel(verifTheo, struc)
 	if model ~= nil then
-		print("Verification 4 succeeded, example found:")
-		print(model)
+		print("Verification 4 succeeded, example found")
+		--print(model)
 	else
 		print("Verification 4 failed, no example found")
 	end
