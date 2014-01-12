@@ -56,8 +56,10 @@ MODULE main
 	
 	-- Het is mogelijk dat pacman oneindig vaak op locatie (1, 1) is terwijl het
 	-- spel nog bezig is.
-	SPEC
-		EF (EG AF (pacman.x = 1 & pacman.y = 1 & !gameover));
+	LTLSPEC
+		-- Noot: deze specificatie drukt de *negatie* van de verificatie uit!
+		--       Het *falen* van deze specificatie druk het *slagen* van de verificatie uit.
+		!(G F (pacman.x = 1 & pacman.y = 1 & !gameover));
 	
 	-- Als pacman oneindig vaak op locatie (1, 1) komt en oneindig vaak op
 	-- locatie (1, 3) komt, dan wordt het spel nooit gewonnen.
